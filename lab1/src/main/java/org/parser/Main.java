@@ -9,16 +9,14 @@ import java.util.Scanner;
 public class Main {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
-        IHandler handler = new RegexHandler();
+        IHandler handler = new JFlexHandler();
 
         String line = scanner.nextLine();
         System.out.println(handler.handleString(line));
-        line = scanner.nextLine();
-        System.out.println(handler.handleString(line));
+
         line = scanner.nextLine();
         System.out.println(handler.handleString(line));
 
         System.out.println(handler.getStatistics());
-
     }
 }

@@ -1,86 +1,56 @@
 package org.parser.implementations.jflex;
 
-
-import com.commandparser.implementations.jflex.generated.CommandLexer;
-import com.commandparser.implementations.jflex.generated.CommandLexer.Token;
-
+import org.parser.model.Token;
 import org.parser.interfaces.IHandler;
+import com.project.jflex.MyLexer;
 
-import java.io.IOException;
 import java.io.StringReader;
 import java.util.*;
 
 public class JFlexHandler implements IHandler {
-
-    private CommandLexer lexer;
-    private final Map<String, Set<Character>> statistics = new HashMap<>();
-
-    private boolean parseLine(String line) throws IOException {
-        StringReader reader = new StringReader(line);
-        lexer = new CommandLexer(reader);
-        lexer.reset();
-
-        Token token;
-        boolean hasCommand = false;
-
-        while ((token = lexer.yylex()) != null) {
-            switch (token) {
-                case COMMAND:
-                    hasCommand = true;
-                    break;
-                case ERROR:
-                    return false;
-
-                default:
-                    break;
-            }
-        }
-        return hasCommand && lexer.isValid();
-    }
-
-    private void mergeStatistics() {
-        Map<String, Set<Character>> lexerStats = lexer.getStatistics();
-
-        for (Map.Entry<String, Set<Character>> entry : lexerStats.entrySet()) {
-            String command = entry.getKey();
-            Set<Character> keys = entry.getValue();
-
-            Set<Character> commandKeys = statistics.computeIfAbsent(command, k -> new TreeSet<>());
-
-            commandKeys.addAll(keys);
-        }
-    }
-
+    private final Map<String, Set<Character>> staticstics = new HashMap<>();
 
     @Override
-    public boolean handleString(String fileName) {
-        if (fileName == null) {
-            return false;
-        }
-
-        String trimmedLine = fileName.trim();
-        if (trimmedLine.isEmpty()) {
-            return false;
-        }
+    public boolean handleString(String input) {
+        MyLexer lexer = new MyLexer(new StringReader(input));
+        String currentCommand;
+        Set<Character> currentKeys = new TreeSet<>();
 
         try {
-            boolean isValid = parseLine(trimmedLine);
-            if (isValid) {
-                mergeStatistics();
+            Token token = lexer.yylex();
+            if (token == null || token.getType() != Token.Type.COMMAND) return false;
+            currentCommand = token.getText();
+
+            while ((token = lexer.yylex()) != null) {
+                switch (token.getType()) {
+                    case KEY_SET:
+                        String keys = token.getText();
+                        for (int i = 0; i < keys.length(); i++) {
+                            currentKeys.add(keys.charAt(i));
+                        }
+                        break;
+
+                    case SPACE:
+                        break;
+
+                    default:
+                        return false;
+                }
             }
-            return isValid;
-        } catch (IOException e) {
+
+            if (currentCommand.isEmpty()) return false;
+
+            staticstics.computeIfAbsent(currentCommand, k -> new TreeSet<>()).addAll(currentKeys);
+            return true;
+
+        } catch (Exception e) {
             return false;
         }
     }
+
 
     @Override
     public Map<String, Set<Character>> getStatistics() {
-        Map<String, Set<Character>> copyMap = new HashMap<>();
-        for (Map.Entry<String, Set<Character>> pair : statistics.entrySet()) {
-            copyMap.put(pair.getKey(), new TreeSet<>(pair.getValue()));
-        }
-        return Collections.unmodifiableMap(copyMap);
+        return staticstics;
     }
-
 }
