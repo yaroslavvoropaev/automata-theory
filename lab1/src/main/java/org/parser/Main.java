@@ -1,17 +1,24 @@
 package org.parser;
 
-import org.parser.implementations.regex.RegexParser;
+import org.parser.implementations.jflex.JFlexHandler;
+import org.parser.implementations.regex.RegexHandler;
+import org.parser.interfaces.IHandler;
+
 import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
-        RegexParser parser = new RegexParser();
+        IHandler handler = new RegexHandler();
 
         String line = scanner.nextLine();
+        System.out.println(handler.handleString(line));
+        line = scanner.nextLine();
+        System.out.println(handler.handleString(line));
+        line = scanner.nextLine();
+        System.out.println(handler.handleString(line));
 
-        System.out.println(parser.handleString(line));
-        System.out.println(parser.getStatistics());
+        System.out.println(handler.getStatistics());
 
     }
 }
