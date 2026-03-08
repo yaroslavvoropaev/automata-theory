@@ -2,7 +2,7 @@ package org.parser.model;
 
 public class Token {
     public enum Type {
-        COMMAND, KEY_SET, SPACE, ERROR,
+        COMMAND, KEY_SET , ERROR, SPACE
     }
 
     private final Type type;
@@ -12,6 +12,10 @@ public class Token {
         this.type = type;
         this.text = text;
     }
-    public Type getType() { return type; }
-    public String getText() { return text; }
+    public Type getType() {
+        return type;
+    }
+    public String getText() {
+        return text;
+    }
 }

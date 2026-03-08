@@ -8,22 +8,26 @@ import java.io.StringReader;
 import java.util.*;
 
 public class JFlexHandler implements IHandler {
-    private final Map<String, Set<Character>> staticstics = new HashMap<>();
+    private final Map<String, Set<Character>> statistics = new HashMap<>();
 
     @Override
     public boolean handleString(String input) {
         MyLexer lexer = new MyLexer(new StringReader(input));
-        String currentCommand;
+        String currentCommand = null;
         Set<Character> currentKeys = new TreeSet<>();
 
         try {
-            Token token = lexer.yylex();
-            if (token == null || token.getType() != Token.Type.COMMAND) return false;
-            currentCommand = token.getText();
-
+            Token token;
             while ((token = lexer.yylex()) != null) {
                 switch (token.getType()) {
+                    case COMMAND:
+                        if (currentCommand != null) return false;
+
+                        currentCommand = token.getText();
+                        break;
                     case KEY_SET:
+                        if (currentCommand == null) return false;
+
                         String keys = token.getText();
                         for (int i = 0; i < keys.length(); i++) {
                             currentKeys.add(keys.charAt(i));
@@ -37,20 +41,15 @@ public class JFlexHandler implements IHandler {
                         return false;
                 }
             }
-
-            if (currentCommand.isEmpty()) return false;
-
-            staticstics.computeIfAbsent(currentCommand, k -> new TreeSet<>()).addAll(currentKeys);
+            statistics.computeIfAbsent(currentCommand, k -> new TreeSet<>()).addAll(currentKeys);
             return true;
-
-        } catch (Exception e) {
+        } catch (Exception ex) {
             return false;
         }
     }
 
-
     @Override
     public Map<String, Set<Character>> getStatistics() {
-        return staticstics;
+        return statistics;
     }
 }

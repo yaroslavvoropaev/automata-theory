@@ -6,9 +6,6 @@ import org.parser.model.Token;
 %public
 %class MyLexer
 %type Token
-%unicode
-%line
-%column
 
 Whitespace = [ \t\f\r\n]+
 Command    = [a-zA-Z0-9./]+
@@ -17,7 +14,7 @@ KeyChar    = [a-zA-Z0-9]
 %%
 
 "-" {KeyChar}+    {
-    String keys = yytext().substring(1); // отрезаем первый дефис
+    String keys = yytext().substring(1);
     return new Token(Token.Type.KEY_SET, keys);
 }
 
@@ -25,4 +22,4 @@ KeyChar    = [a-zA-Z0-9]
 
 {Command}         { return new Token(Token.Type.COMMAND, yytext()); }
 
-.                 { return new Token(Token.Type.ERROR, yytext()); }
+.                 { return new Token(Token.Type.ERROR, yytext());   }

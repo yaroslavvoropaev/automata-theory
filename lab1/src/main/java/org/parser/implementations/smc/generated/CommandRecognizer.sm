@@ -1,0 +1,46 @@
+%class CommandHandler
+%package org.parser.implementations.smc.generated
+%import org.parser.implementations.smc.CommandHandler
+%access public
+
+%start MainMap::Start
+%map MainMap
+%%
+Start {
+    currentChar(c : char)  [ (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '.' || c == '/']   CommandName    { addCommandChar(c); }
+    currentChar(c : char)  [ c == ' ']        nil       {}
+}
+
+CommandName {
+    currentChar(c : char)  [ (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '.' || c == '/']   nil    { addCommandChar(c); }
+    currentChar(c : char)    [c == ' ']               WaitDash       { }
+    EOF                    Valid          { }
+}
+
+WaitDash {
+    currentChar(c : char)  [c == ' ']          nil            { }
+    currentChar(c : char)   [c == '-']     WaitKeySet     { }
+    EOF                    Valid          { }
+}
+
+WaitKeySet {
+    currentChar(c : char)  [ (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') ]   InSet    { addKey(c); }
+}
+
+InSet {
+    currentChar(c : char)  [ (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') ]   nil    { addKey(c); }
+    currentChar(c : char)  [c == ' ']    WaitDash      { }
+    EOF                    Valid         { }
+}
+
+Valid {}
+
+Error {
+    Default                nil            { }
+}
+
+Default {
+    currentChar(c : char)  Error          { }
+    EOF                    Error          { }
+}
+%%
