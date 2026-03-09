@@ -1,6 +1,6 @@
 package org.parser.implementations.smc;
 
-import org.parser.implementations.smc.generated.CommandRecognizerContext;
+import com.project.smc.CommandRecognizerContext;
 import org.parser.interfaces.IHandler;
 import java.util.*;
 

@@ -1,5 +1,5 @@
 %class CommandHandler
-%package org.parser.implementations.smc.generated
+%package com.project.smc
 %import org.parser.implementations.smc.CommandHandler
 %access public
 
