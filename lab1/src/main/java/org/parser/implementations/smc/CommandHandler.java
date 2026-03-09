@@ -11,7 +11,6 @@ public class CommandHandler implements IHandler {
 
     private final StringBuilder currentCommand = new StringBuilder();
     private final Set<Character> currentKeys = new TreeSet<>();
-    private boolean isError = false;
 
     public CommandHandler() {
         fsm = new CommandRecognizerContext(this);
@@ -19,17 +18,21 @@ public class CommandHandler implements IHandler {
 
     @Override
     public boolean handleString(String str) {
-
         fsm = new CommandRecognizerContext(this);
         currentCommand.setLength(0);
         currentKeys.clear();
-        isError = false;
 
-        if (str == null || str.trim().isEmpty()) return false;
+        boolean isError = false;
+        if (str == null)  {
+            return false;
+        }
 
         for (char c : str.toCharArray()) {
-            if (isError) break;
-            processCharacter(c);
+            if (fsm.getState().getName().contains("Error")) {
+                isError = true;
+                break;
+            }
+            fsm.currentChar(c);
         }
 
         if (!isError) {
@@ -39,32 +42,19 @@ public class CommandHandler implements IHandler {
         boolean isValid = fsm.getState().getName().contains("Valid");
 
         if (isValid) {
-            String cmd = currentCommand.toString();
-            statistics.putIfAbsent(cmd, new HashSet<>());
-            statistics.get(cmd).addAll(currentKeys);
+            String command = currentCommand.toString();
+            statistics.putIfAbsent(command, new HashSet<>());
+            statistics.get(command).addAll(currentKeys);
         }
-
         return isValid;
     }
 
-    private void processCharacter(char c) {
-        try {
-            if (isAlphaNum(c) || c == '.' || c == '/' || c == '-' || Character.isWhitespace(c)) {
-                fsm.currentChar(c);
-            } else {
-                isError = true;
-            }
-        } catch (Exception e) {
-            isError = true;
-        }
+    public void addCommandChar(char c) {
+        currentCommand.append(c);
     }
-
-    private boolean isAlphaNum(char c) {
-        return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9');
+    public void addKey(char c) {
+        currentKeys.add(c);
     }
-
-    public void addCommandChar(char c) { currentCommand.append(c); }
-    public void addKey(char c) { currentKeys.add(c); }
 
     @Override
     public Map<String, Set<Character>> getStatistics() {

@@ -7,30 +7,30 @@
 %map MainMap
 %%
 Start {
-    currentChar(c : char)  [ (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '.' || c == '/']   CommandName    { addCommandChar(c); }
-    currentChar(c : char)  [ c == ' ']        nil       {}
+    currentChar(c : char)   [ (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '.' || c == '/']   CommandName   { addCommandChar(c); }
+    currentChar(c : char)   [ c == ' ']                                                                                             nil           { }
 }
 
 CommandName {
-    currentChar(c : char)  [ (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '.' || c == '/']   nil    { addCommandChar(c); }
-    currentChar(c : char)    [c == ' ']               WaitDash       { }
-    EOF                    Valid          { }
+    currentChar(c : char)   [ (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '.' || c == '/']   nil           { addCommandChar(c); }
+    currentChar(c : char)   [c == ' ']                                                                                              WaitDash      { }
+    EOF                                                                                                                             Valid         { }
 }
 
 WaitDash {
-    currentChar(c : char)  [c == ' ']          nil            { }
-    currentChar(c : char)   [c == '-']     WaitKeySet     { }
-    EOF                    Valid          { }
+    currentChar(c : char)   [c == ' ']   nil            { }
+    currentChar(c : char)   [c == '-']   WaitKeySet     { }
+    EOF                                  Valid          { }
 }
 
 WaitKeySet {
-    currentChar(c : char)  [ (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') ]   InSet    { addKey(c); }
+    currentChar(c : char)   [ (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') ]   InSet   { addKey(c); }
 }
 
 InSet {
-    currentChar(c : char)  [ (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') ]   nil    { addKey(c); }
-    currentChar(c : char)  [c == ' ']    WaitDash      { }
-    EOF                    Valid         { }
+    currentChar(c : char)   [ (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') ]   nil        { addKey(c); }
+    currentChar(c : char)   [c == ' ']                                                                       WaitDash   { }
+    EOF                                                                                                      Valid      { }
 }
 
 Valid {}

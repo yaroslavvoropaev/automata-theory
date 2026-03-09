@@ -6,7 +6,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.commandparser</groupId>
-    <artifactId>jflex-parser</artifactId>
+    <artifactId>lab1</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <properties>
