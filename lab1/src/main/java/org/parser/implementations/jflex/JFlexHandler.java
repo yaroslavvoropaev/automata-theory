@@ -13,35 +13,29 @@ public class JFlexHandler implements IHandler {
     @Override
     public boolean handleString(String input) {
         MyLexer lexer = new MyLexer(new StringReader(input));
-        String currentCommand = null;
+        StringBuilder currentCommand = new StringBuilder();
         Set<Character> currentKeys = new TreeSet<>();
 
         try {
             Token token;
-            while ((token = lexer.yylex()) != null) {
+            while ((token = lexer.yylex()) != null && token.getType() != Token.Type.END_OF_LINE) {
                 switch (token.getType()) {
-                    case COMMAND:
-                        if (currentCommand != null) return false;
-
-                        currentCommand = token.getText();
-                        break;
-                    case KEY_SET:
-                        if (currentCommand == null) return false;
-
+                    case PART_COMMAND -> {
+                        currentCommand.append(token.getText());
+                    }
+                    case KEY_SET -> {
                         String keys = token.getText();
                         for (int i = 0; i < keys.length(); i++) {
                             currentKeys.add(keys.charAt(i));
                         }
-                        break;
-
-                    case SPACE:
-                        break;
-
-                    default:
+                    }
+                    case SPACE -> {}
+                    case ERROR -> {
                         return false;
+                    }
                 }
             }
-            statistics.computeIfAbsent(currentCommand, k -> new TreeSet<>()).addAll(currentKeys);
+            statistics.computeIfAbsent(currentCommand.toString(), k -> new TreeSet<>()).addAll(currentKeys);
             return true;
         } catch (Exception ex) {
             return false;

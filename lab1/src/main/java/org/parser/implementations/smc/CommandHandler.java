@@ -1,4 +1,4 @@
-package org.parser.implementations.smc;
+/*package org.parser.implementations.smc;
 
 import com.project.smc.CommandRecognizerContext;
 import org.parser.interfaces.IHandler;
@@ -60,4 +60,4 @@ public class CommandHandler implements IHandler {
     public Map<String, Set<Character>> getStatistics() {
         return statistics;
     }
-}
+}*/
