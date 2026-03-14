@@ -56,7 +56,7 @@ KeyChar = [a-zA-Z0-9]
     }
     {EndOfLine} {
             return new Token(Token.Type.END_OF_LINE, yytext());
-     }
+    }
     . { return new Token(Token.Type.ERROR, yytext()); }
 }
 

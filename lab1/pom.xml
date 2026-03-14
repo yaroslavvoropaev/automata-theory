@@ -46,6 +46,25 @@
                 </executions>
             </plugin>
 
+
+            <plugin>
+                <groupId>net.sf.smc</groupId>
+                <artifactId>smc-maven-plugin</artifactId>
+                <version>7.5.0</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>smc</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <sourceDirectory>src/main/smc</sourceDirectory>
+                    <targetDirectory>${project.build.directory}/generated-sources/smc</targetDirectory>
+                    <targetLanguage>java</targetLanguage>
+                </configuration>
+            </plugin>
+
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
