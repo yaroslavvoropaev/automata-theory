@@ -11,6 +11,7 @@ import org.parser.model.Token;
 %state COMMAND
 %state WAIT_KEYS
 %state KEY_SET
+%state DASH
 
 Dash = "-"
 Letter = [a-zA-Z0-9./]
@@ -22,7 +23,7 @@ KeyChar = [a-zA-Z0-9]
 %%
 
 <YYINITIAL> {
-    {Space} { return new Token(Token.Type.SPACE, yytext()); }
+    {Space}+ { return new Token(Token.Type.SPACE, yytext()); }
     {Letter} {
         yybegin(COMMAND);
         return new Token(Token.Type.PART_COMMAND, yytext());
@@ -32,8 +33,7 @@ KeyChar = [a-zA-Z0-9]
 
 
 <COMMAND> {
-    {Space} {
-        yybegin(WAIT_KEYS);
+    {Space}+ {
         return new Token(Token.Type.SPACE, yytext());
     }
     {Command} {
@@ -47,12 +47,9 @@ KeyChar = [a-zA-Z0-9]
 }
 
 <WAIT_KEYS> {
-    {Space} {
+    {Space}+ {
+        yybegin(DASH);
         return new Token(Token.Type.SPACE, yytext());
-    }
-    {Dash} {
-        yybegin(KEY_SET);
-        return new Token(Token.Type.DASH, yytext());
     }
     {EndOfLine} {
             return new Token(Token.Type.END_OF_LINE, yytext());
@@ -60,6 +57,13 @@ KeyChar = [a-zA-Z0-9]
     . { return new Token(Token.Type.ERROR, yytext()); }
 }
 
+<DASH> {
+    {Dash} {
+        yybegin(KEY_SET);
+        return new Token(Token.Type.DASH, yytext());
+    }
+    . { return new Token(Token.Type.ERROR, yytext()); }
+}
 
 <KEY_SET> {
     {KeyChar}+ {
