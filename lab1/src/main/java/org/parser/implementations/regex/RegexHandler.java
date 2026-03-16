@@ -10,9 +10,8 @@ import java.util.regex.Pattern;
 
 public class RegexHandler implements IHandler {
 
-
     private static final Pattern commandPattern = Pattern.compile("^([a-zA-Z0-9./]+)(\\s+-[a-zA-Z0-9]+)*$");
-    private static final Pattern keysPattern = Pattern.compile("-([a-zA-Z0-9]+)");
+    private static final Pattern keyPattern = Pattern.compile("-([a-zA-Z0-9]+)");
     private final Map<String, Set<Character>> statistics = new HashMap<>();
 
     @Override
@@ -29,22 +28,19 @@ public class RegexHandler implements IHandler {
         String commandName = commandMatcher.group(1);
         Set<Character> keys = statistics.computeIfAbsent(commandName, k -> new TreeSet<>());
 
-        Matcher keysMatcher = keysPattern.matcher(str);
-        while (keysMatcher.find()) {
-            for (char c : keysMatcher.group(1).toCharArray()) {
+        Matcher keyMatcher = keyPattern.matcher(str);
+        while (keyMatcher.find()) {
+            for (char c : keyMatcher.group(1).toCharArray()) {
                 keys.add(c);
             }
         }
         return true;
     }
 
+
     @Override
     public Map<String, Set<Character>> getStatistics() {
-        Map<String, Set<Character>> copyMap = new HashMap<>();
-        for (Map.Entry<String, Set<Character>> pair : statistics.entrySet()) {
-            copyMap.put(pair.getKey(), new TreeSet<>(pair.getValue()));
-        }
-        return Collections.unmodifiableMap(copyMap);
+        return statistics;
     }
 
 }

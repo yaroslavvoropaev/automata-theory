@@ -3,10 +3,8 @@ package org.parser.model;
 public class Token {
     public enum Type {
         PART_COMMAND,
-        DASH,
         KEY_SET,
         ERROR,
-        SPACE,
         END_OF_LINE,
     }
 

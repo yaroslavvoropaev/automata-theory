@@ -13,6 +13,7 @@ public class JFlexHandler implements IHandler {
     public boolean handleString(String input) {
         MyLexer lexer = new MyLexer(new StringReader(input));
         StringBuilder currentCommand = new StringBuilder();
+
         Set<Character> currentKeys = new TreeSet<>();
 
         try {
@@ -26,7 +27,6 @@ public class JFlexHandler implements IHandler {
                             currentKeys.add(keys.charAt(i));
                         }
                     }
-                    case SPACE -> {}
                     case ERROR -> {
                         return false;
                     }
@@ -38,7 +38,7 @@ public class JFlexHandler implements IHandler {
             return false;
         }
     }
-
+    
     @Override
     public Map<String, Set<Character>> getStatistics() {
         return statistics;

@@ -1,9 +1,9 @@
 package org.parser.ui;
 
+import org.parser.implementations.smc.SmcHandler;
 import org.parser.interfaces.IHandler;
 import org.parser.implementations.regex.RegexHandler;
 import org.parser.implementations.jflex.JFlexHandler;
-import org.parser.implementations.smc.CommandHandler;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -17,7 +17,7 @@ public class Dialog {
     static {
         handlers.put(1, RegexHandler::new);
         handlers.put(2, JFlexHandler::new);
-        handlers.put(3, CommandHandler::new);
+        handlers.put(3, SmcHandler::new);
     }
 
     @FunctionalInterface
@@ -31,7 +31,7 @@ public class Dialog {
                 String input = scanner.nextLine().trim();
                 return Integer.parseInt(input);
             } catch(NumberFormatException ex) {
-                System.out.print("Please, input number: ");
+                System.out.print("Пожауйста, введите число: ");
             }
         }
     }
@@ -70,14 +70,12 @@ public class Dialog {
         return switch (choice) {
             case 1 -> processTerminalInput(scanner, handler);
             case 2 -> processFileInput(scanner, handler);
-            default -> {
-                yield false;
-            }
+            default -> false;
         };
     }
 
     private static boolean processTerminalInput(Scanner scanner, IHandler handler) {
-        System.out.println("\nВведите строки: ");
+        System.out.println("\nВведите строку: ");
 
         while (true) {
             System.out.print("> ");
@@ -85,7 +83,7 @@ public class Dialog {
 
             try {
                 line = scanner.nextLine();
-            } catch (NoSuchElementException e) {
+            } catch (NoSuchElementException ex) {
                 break;
             }
 
@@ -103,11 +101,6 @@ public class Dialog {
 
         if (!Files.exists(path)) {
             System.out.println("Файл не найден: " + filePath);
-            return false;
-        }
-
-        if (!Files.isRegularFile(path)) {
-            System.out.println("Указанный путь не является файлом: " + filePath);
             return false;
         }
 
@@ -135,11 +128,10 @@ public class Dialog {
             System.out.println("Успешно обработано: " + successCount);
             System.out.println("Не удалось обработать: " + (totalCount - successCount));
 
-        } catch (IOException e) {
-            System.err.println("Ошибка при чтении файла: " + e.getMessage());
+        } catch (IOException ex) {
+            System.err.println("Ошибка при чтении файла: " + ex.getMessage());
             return false;
         }
-
         return true;
     }
 

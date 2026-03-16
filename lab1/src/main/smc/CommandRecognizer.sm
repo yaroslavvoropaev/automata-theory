@@ -1,6 +1,6 @@
-%class CommandHandler
+%class SmcHandler
 %package com.project.smc
-%import org.parser.implementations.smc.CommandHandler
+%import org.parser.implementations.smc.SmcHandler
 %access public
 
 %start MainMap::Start
