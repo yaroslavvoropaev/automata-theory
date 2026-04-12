@@ -19,6 +19,10 @@ public class Parser {
         this.tokens = tokens;
     }
 
+    public boolean hasNamedGroups() {
+        return !namedGroupsStore.isEmpty();
+    }
+
     public Node parse() {
         Node result = parseExpression();
         if (peek().type() != TokenType.EOF) {
@@ -36,19 +40,18 @@ public class Parser {
         return left;
     }
 
-    private Node parseSequence() {
+    private Node parseSequence() {          // конкантенация
         Node left = parsePostfix();
 
         while (canStartExpression(peek().type())) {
-            match(TokenType.CONCAT_OP);
-
+            match(TokenType.CONCAT_OP);     // если есть -, скушать его
             Node right = parsePostfix();
             left = new Concat(left, right);
         }
         return left;
     }
 
-    private Node parsePostfix() {
+    private Node parsePostfix() {            // квантификаторы
         Node node = parsePrimary();
 
         while (true) {
@@ -68,15 +71,14 @@ public class Parser {
     }
 
     private Node parsePrimary() {
-        if (match(TokenType.LPAREN)) {
 
+        if (match(TokenType.LPAREN)) {
             if (peek().type() == TokenType.NAMED_GROUP) {
                 String name = consume(TokenType.NAMED_GROUP).value();
                 Node content = parseExpression();
                 consume(TokenType.RPAREN);
 
                 namedGroupsStore.put(name, content);
-
                 return new NamedGroup(name, content);
             }
 
@@ -92,7 +94,6 @@ public class Parser {
             if (savedNode == null) {
                 throw new RuntimeException("Error: The named group <" + name + "> was used before it was defined");
             }
-
             return savedNode;
         }
 
@@ -100,9 +101,9 @@ public class Parser {
             return new AnyChar();
         }
 
-        Token t = peek();
+        Token token = peek();
         if (match(TokenType.CHAR)) {
-            return new Literal(t.value().charAt(0));
+            return new Literal(token.value().charAt(0));
         }
 
         throw new RuntimeException("A character or an opening parenthesis was expected at the position " + peek().position());
