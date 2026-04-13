@@ -10,14 +10,15 @@ import java.util.*;
 public class DfaMinimizer {
 
     public DfaState minimize(DfaState startState) {
-        Set<DfaState> allStates = new HashSet<>();
-        Set<Character> alphabet = new HashSet<>();
+        Set<DfaState> allStates = new HashSet<>();  //состояния, которые были посещены
+        Set<Character> alphabet = new HashSet<>();  //символы встретившиеся на ребрах
         Queue<DfaState> queue = new LinkedList<>();
 
         queue.add(startState);
         allStates.add(startState);
 
-        while (!queue.isEmpty()) {
+
+        while (!queue.isEmpty()) {                //bfs
             DfaState current = queue.poll();
             for (Map.Entry<Character, DfaState> entry : current.transitions.entrySet()) {
                 alphabet.add(entry.getKey());
@@ -28,31 +29,39 @@ public class DfaMinimizer {
             }
         }
 
-        Set<DfaState> finalStates = new HashSet<>();
-        Set<DfaState> nonFinalStates = new HashSet<>();
-        for (DfaState s : allStates) {
-            if (s.isFinal) finalStates.add(s);
-            else nonFinalStates.add(s);
+        Set<DfaState> finalStates = new HashSet<>();     // допускающие сост
+        Set<DfaState> nonFinalStates = new HashSet<>();  // не допускающие сост
+        for (DfaState state : allStates) {
+            if (state.isFinal) {
+                finalStates.add(state);
+            }
+            else nonFinalStates.add(state);
         }
 
-        List<Set<DfaState>> partitions = new ArrayList<>();
-        if (!finalStates.isEmpty()) partitions.add(finalStates);
-        if (!nonFinalStates.isEmpty()) partitions.add(nonFinalStates);
+
+        List<Set<DfaState>> partitions = new ArrayList<>();  // каждая группа это множество сост которые считаются экв на текущем этапе
+        if (!finalStates.isEmpty())  {
+            partitions.add(finalStates);
+        }
+        if (!nonFinalStates.isEmpty()) {
+            partitions.add(nonFinalStates);
+        }
 
         boolean changed = true;
         while (changed) {
             changed = false;
+
             List<Set<DfaState>> newPartitions = new ArrayList<>();
 
-            Map<DfaState, Integer> stateToPartitionIndex = new HashMap<>();
+            Map<DfaState, Integer> stateToPartitionIndex = new HashMap<>();   // ключ - состояние, значнеие - индекс группы
             for (int i = 0; i < partitions.size(); i++) {
-                for (DfaState s : partitions.get(i)) {
-                    stateToPartitionIndex.put(s, i);
+                for (DfaState state : partitions.get(i)) {
+                    stateToPartitionIndex.put(state, i);
                 }
             }
 
             for (Set<DfaState> group : partitions) {
-                Map<Map<Character, Integer>, Set<DfaState>> splits = new HashMap<>();
+                Map<Map<Character, Integer>, Set<DfaState>> splits = new HashMap<>(); // первая мапа - сигнатра: для каждого символа -> индеск группы в которую ведет переход
 
                 for (DfaState state : group) {
                     Map<Character, Integer> signature = new HashMap<>();
@@ -71,13 +80,13 @@ public class DfaMinimizer {
             partitions = newPartitions;
         }
 
-        Map<Set<DfaState>, DfaState> newStatesMap = new HashMap<>();
+        Map<Set<DfaState>, DfaState> newStatesMap = new HashMap<>();  // ключ - состояния в дка, значение - соотв сост в мин дка
         DfaState newStart = null;
 
         for (Set<DfaState> group : partitions) {
             Set<NfaState> mergedNfaStates = new HashSet<>();
-            for (DfaState s : group) {
-                mergedNfaStates.addAll(s.nfaStates);
+            for (DfaState state : group) {
+                mergedNfaStates.addAll(state.nfaStates);
             }
 
             DfaState newState = new DfaState(mergedNfaStates);
@@ -151,24 +160,32 @@ public class DfaMinimizer {
     }
 
 
-    public void toDotImage(DfaState startState, String filename) {
+    public void toDotImage(DfaState dfa, String filename) {
+        Path dotPath = Paths.get(filename + ".dot");
+        Path pngPath = Paths.get(filename + ".png");
+
         try {
-            String dotContent = toDot(startState);
+            Files.writeString(dotPath, toDot(dfa));
+            ProcessBuilder pb = new ProcessBuilder("dot", "-Tpng", dotPath.toString(), "-o", pngPath.toString());
+            pb.redirectErrorStream(true);
+            Process p = pb.start();
 
-            String dotFile = filename + ".dot";
-            Files.write(Paths.get(dotFile), dotContent.getBytes());
+            String errorOutput = new String(p.getInputStream().readAllBytes());
 
-            ProcessBuilder pb = new ProcessBuilder("dot", "-Tpng", dotFile, "-o", filename + ".png");
-            pb.inheritIO();
-            Process process = pb.start();
-            process.waitFor();
+            int exitCode = p.waitFor();
+            if (exitCode != 0) {
+                throw new IOException("Graphviz error: " + errorOutput);
+            }
 
+            System.out.println("Граф сохранен в: " + pngPath.toAbsolutePath());
 
-            System.out.println("Граф сохранён: " + filename + ".png");
-
-        } catch (Exception e) {
-            System.err.println("Ошибка при создании изображения: " + e.getMessage());
+        } catch (IOException | InterruptedException e) {
+            System.err.println("Ошибка генерации. Проверьте Graphviz: dot -V");
             e.printStackTrace();
+        } finally {
+            try {
+                Files.deleteIfExists(dotPath);
+            } catch (IOException ignored) {}
         }
     }
 }

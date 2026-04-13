@@ -1,16 +1,12 @@
 package org.example;
 
-import org.example.matcher.MatchResult;
-
-
-import java.util.Map;
 
 public class Main {
     public static void main(String[] args) {
 
-        Pattern p = Pattern.compile("abb.");
+        Pattern p = Pattern.compile("(((a|b)+)&.){2,3}");
 
-        if (p.matches("abb0")) {
+        if (p.matches("aaaacd")) {
             System.out.println("Success");
         }
     }

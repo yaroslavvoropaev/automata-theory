@@ -27,6 +27,7 @@ public class Pattern {
 
         Parser parser = new Parser(tokens);
         Node ast = parser.parse();
+        parser.toDotImage(ast, "my_ast_graph");
         this.hasGroups = parser.hasNamedGroups();
 
         NfaBuilder nfaBuilder = new NfaBuilder();

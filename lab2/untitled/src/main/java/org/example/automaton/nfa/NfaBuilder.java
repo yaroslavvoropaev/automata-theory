@@ -2,8 +2,10 @@ package org.example.automaton.nfa;
 
 
 import org.example.parser.ast.*;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Paths;
 
@@ -171,6 +173,7 @@ public class NfaBuilder {
 
 
 
+
     public String toDot(NfaFragment nfa) {
         nfa.end().isFinal = true;
         StringBuilder dot = new StringBuilder();
@@ -243,27 +246,31 @@ public class NfaBuilder {
     }
 
     public void toDotImage(NfaFragment nfa, String filename) {
-        String dotContent = toDot(nfa);
-        String dotFile = filename + ".dot";
-        String imageFile = filename + ".png";
-
-        try (FileWriter writer = new FileWriter(dotFile)) {
-            writer.write(dotContent);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return;
-        }
+        Path dotPath = Paths.get(filename + ".dot");
+        Path pngPath = Paths.get(filename + ".png");
 
         try {
-            Process process = Runtime.getRuntime().exec(String.format("dot -Tpng %s -o %s", dotFile, imageFile));
-            process.waitFor();
+            Files.writeString(dotPath, toDot(nfa));
+            ProcessBuilder pb = new ProcessBuilder("dot", "-Tpng", dotPath.toString(), "-o", pngPath.toString());
+            pb.redirectErrorStream(true);
+            Process p = pb.start();
 
-            new java.io.File(dotFile).delete();
+            String errorOutput = new String(p.getInputStream().readAllBytes());
 
-            System.out.println("Граф сохранен в: " + Paths.get(imageFile).toAbsolutePath());
+            int exitCode = p.waitFor();
+            if (exitCode != 0) {
+                throw new IOException("Graphviz error: " + errorOutput);
+            }
+
+            System.out.println("Граф сохранен в: " + pngPath.toAbsolutePath());
+
         } catch (IOException | InterruptedException e) {
-            System.err.println("Ошибка генерации изображения. Установите Graphviz (brew install graphviz / apt-get install graphviz)");
+            System.err.println("Ошибка генерации. Проверьте Graphviz: dot -V");
             e.printStackTrace();
+        } finally {
+            try {
+                Files.deleteIfExists(dotPath);
+            } catch (IOException ignored) {}
         }
     }
 

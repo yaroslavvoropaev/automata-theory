@@ -114,28 +114,32 @@ public class DfaBuilder {
         return dot.toString();
     }
 
-    public void toDotImage(DfaState startState, String filename) {
+    public void toDotImage(DfaState dfa, String filename) {
+        Path dotPath = Paths.get(filename + ".dot");
+        Path pngPath = Paths.get(filename + ".png");
+
         try {
-            String dotContent = toDot(startState);
+            Files.writeString(dotPath, toDot(dfa));
+            ProcessBuilder pb = new ProcessBuilder("dot", "-Tpng", dotPath.toString(), "-o", pngPath.toString());
+            pb.redirectErrorStream(true);
+            Process p = pb.start();
 
-            String dotFileName = filename + ".dot";
-            Files.write(Paths.get(dotFileName), dotContent.getBytes());
+            String errorOutput = new String(p.getInputStream().readAllBytes());
 
-            ProcessBuilder pb = new ProcessBuilder("dot", "-Tpng", dotFileName, "-o", filename + ".png");
-            Process process = pb.start();
-
-            int exitCode = process.waitFor();
-            if (exitCode == 0) {
-                System.out.println("Граф сохранён в: " + filename + ".png");
-            } else {
-                System.err.println("Ошибка при создании графа. Установлен ли Graphviz?");
-                // Выводим ошибки для диагностики
-                try (var reader = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
-                    reader.lines().forEach(System.err::println);
-                }
+            int exitCode = p.waitFor();
+            if (exitCode != 0) {
+                throw new IOException("Graphviz error: " + errorOutput);
             }
+
+            System.out.println("Граф сохранен в: " + pngPath.toAbsolutePath());
+
         } catch (IOException | InterruptedException e) {
+            System.err.println("Ошибка генерации. Проверьте Graphviz: dot -V");
             e.printStackTrace();
+        } finally {
+            try {
+                Files.deleteIfExists(dotPath);
+            } catch (IOException ignored) {}
         }
     }
 }

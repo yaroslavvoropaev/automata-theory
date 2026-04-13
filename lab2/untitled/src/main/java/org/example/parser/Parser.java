@@ -1,16 +1,20 @@
 package org.example.parser;
 
+
 import org.example.lexer.Token;
 import org.example.lexer.TokenType;
 import org.example.parser.ast.*;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 
 public class Parser {
-
     private final List<Token> tokens;
     private int pos = 0;
     private final Map<String, Node> namedGroupsStore = new HashMap<>();
@@ -150,4 +154,44 @@ public class Parser {
         }
         throw new RuntimeException("The token " + type + " was expected, but " + peek().type() + " was found at the position " + peek().position());
     }
+
+
+    public String toDot(Node ast) {
+        return "digraph AST {\n" +
+                "  node [shape=box, style=filled, fillcolor=lightblue];\n" +
+                ast.toDot() +
+                "}\n";
+    }
+
+    public void toDotImage(Node ast, String filename) {
+        Path dotPath = Paths.get(filename + ".dot");
+        Path pngPath = Paths.get(filename + ".png");
+
+        try {
+            Files.writeString(dotPath, toDot(ast));
+            ProcessBuilder pb = new ProcessBuilder("dot", "-Tpng", dotPath.toString(), "-o", pngPath.toString());
+            pb.redirectErrorStream(true);
+            Process p = pb.start();
+
+            String errorOutput = new String(p.getInputStream().readAllBytes());
+
+            int exitCode = p.waitFor();
+            if (exitCode != 0) {
+                throw new IOException("Graphviz error: " + errorOutput);
+            }
+
+            System.out.println("Граф сохранен в: " + pngPath.toAbsolutePath());
+
+        } catch (IOException | InterruptedException e) {
+            System.err.println("Ошибка генерации. Проверьте Graphviz: dot -V");
+            e.printStackTrace();
+        } finally {
+            try {
+                Files.deleteIfExists(dotPath);
+            } catch (IOException ignored) {}
+        }
+    }
+
+
+
 }

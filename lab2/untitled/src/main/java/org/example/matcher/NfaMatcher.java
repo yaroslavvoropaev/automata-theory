@@ -7,15 +7,13 @@ import java.util.*;
 
 public class NfaMatcher {
     private final NfaFragment nfa;
-
     public NfaMatcher(NfaFragment nfa) {
         this.nfa = nfa;
     }
 
     public MatchResult match(String text) {
-        Map<String, Integer> groupStarts = new HashMap<>();
-        Map<String, String> capturedGroups = new HashMap<>();
-
+        Map<String, Integer> groupStarts = new HashMap<>();    // ключ - имя группы, значение - индекс начала в тексте
+        Map<String, String> capturedGroups = new HashMap<>();  // ключ - имя группы, значение - захваченный текст
         boolean isMatch = dfs(nfa.start(), text, 0, groupStarts, capturedGroups, new HashSet<>());
 
         if (isMatch) {
@@ -23,7 +21,6 @@ public class NfaMatcher {
         }
         return new MatchResult();
     }
-
     private boolean dfs(NfaState state, String text, int index,
                         Map<String, Integer> groupStarts,
                         Map<String, String> capturedGroups,
@@ -62,7 +59,7 @@ public class NfaMatcher {
             if (!visitedEpsilons.contains(eps)) {
                 visitedEpsilons.add(eps);
                 if (dfs(eps, text, index, groupStarts, capturedGroups, visitedEpsilons)) return true;
-                visitedEpsilons.remove(eps); // Backtrack
+                visitedEpsilons.remove(eps);
             }
         }
 
@@ -81,7 +78,6 @@ public class NfaMatcher {
                 if (dfs(next, text, index + 1, groupStarts, capturedGroups, new HashSet<>())) return true;
             }
         }
-
         return false;
     }
 }
