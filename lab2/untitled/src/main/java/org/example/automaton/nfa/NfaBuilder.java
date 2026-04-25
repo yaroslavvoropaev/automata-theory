@@ -12,21 +12,20 @@ import java.nio.file.Paths;
 public class NfaBuilder {
 
     private NfaFragment buildRepeatHard(Repeat repeat) {
-        NfaState finalStart = null;
-        NfaState currentEnd = null;
+        NfaState finalStart = null;           // начальоне состояние итогового фрагмента
+        NfaState currentEnd = null;            // текущий конец
 
-        for (int i = 0; i < repeat.min(); i++) {        // построение обязательных повторений a{3}
-            NfaFragment sub = build(repeat.child());
+        for (int i = 0; i < repeat.min(); i++) {        // построение обзяательных повторений a{3}
+            NfaFragment loopPart = build(repeat.child());
             if (finalStart == null) {
-                finalStart = sub.start();
+                finalStart = loopPart.start();
             } else {
-                currentEnd.addEpsilon(sub.start());
+                currentEnd.addEpsilon(loopPart.start());
             }
-            currentEnd = sub.end();
+            currentEnd = loopPart.end();
         }
 
-
-        if (repeat.max() == null) {                     //  построение бесконечности a{3,}
+        if (repeat.max() == null) {           //      a{3,}
             NfaFragment loopPart = build(repeat.child());
 
             NfaState start = new NfaState();
@@ -34,7 +33,6 @@ public class NfaBuilder {
 
             start.addEpsilon(loopPart.start());
             start.addEpsilon(end);
-
             loopPart.end().addEpsilon(loopPart.start());
             loopPart.end().addEpsilon(end);
 
@@ -47,20 +45,20 @@ public class NfaBuilder {
         } else if (repeat.max() > repeat.min()) {
             for (int i = repeat.min(); i < repeat.max(); i++) {// a{3,5}
 
-                NfaFragment sub = build(repeat.child());
-                NfaState optStart = new NfaState();
-                NfaState optEnd = new NfaState();
+                NfaFragment loopPart = build(repeat.child());
+                NfaState start = new NfaState();
+                NfaState end = new NfaState();
 
-                optStart.addEpsilon(sub.start());
-                optStart.addEpsilon(optEnd);
-                sub.end().addEpsilon(optEnd);
+                start.addEpsilon(loopPart.start());
+                start.addEpsilon(end);
+                loopPart.end().addEpsilon(end);
 
                 if (finalStart == null) {
-                    finalStart = optStart;
+                    finalStart = start;
                 } else {
-                    currentEnd.addEpsilon(optStart);
+                    currentEnd.addEpsilon(start);
                 }
-                currentEnd = optEnd;
+                currentEnd = end;
             }
         }
 
@@ -74,20 +72,20 @@ public class NfaBuilder {
 
 
     private NfaFragment buildRepeatEasy(Repeat repeat) {
-        NfaFragment sub = build(repeat.child());
 
-        if (repeat.min() == 1 && repeat.max() == null) {   // a+
+        if (repeat.min() == 1 && repeat.max() == null) { //+
+            NfaFragment sub = build(repeat.child());
             NfaState start = new NfaState();
             NfaState end = new NfaState();
 
             start.addEpsilon(sub.start());
             sub.end().addEpsilon(sub.start());
             sub.end().addEpsilon(end);
-
             return new NfaFragment(start, end);
         }
 
-        if (repeat.min() == 0 && repeat.max() == 1) {      //a?
+        if (repeat.min() == 0 && repeat.max() != null && repeat.max() == 1) { //?
+            NfaFragment sub = build(repeat.child());
             sub.start().addEpsilon(sub.end());
             return sub;
         }
@@ -97,15 +95,14 @@ public class NfaBuilder {
 
     public NfaFragment build(Node node) {
 
-        if (node instanceof Literal literal) {
+        if (node instanceof Literal literal) {   // листья
             NfaState start = new NfaState();
             NfaState end = new NfaState();
             start.addTransition(literal.value(), end);
             return new NfaFragment(start, end);
         }
 
-
-        if (node instanceof Concat concat) {
+        if (node instanceof Concat concat) {      // ab
             NfaFragment left = build(concat.left());
             NfaFragment right = build(concat.right());
 
@@ -122,7 +119,7 @@ public class NfaBuilder {
             return new NfaFragment(left.start(), right.end());
         }
 
-        if (node instanceof Or or) {
+        if (node instanceof Or or) {           // a|b
             NfaState start = new NfaState();
             NfaState end = new NfaState();
 
@@ -170,7 +167,6 @@ public class NfaBuilder {
 
         throw new UnsupportedOperationException("Node " + node.getClass().getSimpleName() + "not realized yet");
     }
-
 
 
 
@@ -262,7 +258,7 @@ public class NfaBuilder {
                 throw new IOException("Graphviz error: " + errorOutput);
             }
 
-            System.out.println("Граф сохранен в: " + pngPath.toAbsolutePath());
+            // System.out.println("Граф сохранен в: " + pngPath.toAbsolutePath());
 
         } catch (IOException | InterruptedException e) {
             System.err.println("Ошибка генерации. Проверьте Graphviz: dot -V");

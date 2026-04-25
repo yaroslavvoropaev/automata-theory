@@ -21,6 +21,7 @@ public class NfaMatcher {
         }
         return new MatchResult();
     }
+
     private boolean dfs(NfaState state, String text, int index,
                         Map<String, Integer> groupStarts,
                         Map<String, String> capturedGroups,
@@ -58,7 +59,9 @@ public class NfaMatcher {
         for (NfaState eps : state.epsilons) {
             if (!visitedEpsilons.contains(eps)) {
                 visitedEpsilons.add(eps);
-                if (dfs(eps, text, index, groupStarts, capturedGroups, visitedEpsilons)) return true;
+                if (dfs(eps, text, index, groupStarts, capturedGroups, visitedEpsilons)) {
+                    return true;
+                }
                 visitedEpsilons.remove(eps);
             }
         }
@@ -68,14 +71,18 @@ public class NfaMatcher {
         List<NfaState> nextStates = state.transitions.get(c);
         if (nextStates != null) {
             for (NfaState next : nextStates) {
-                if (dfs(next, text, index + 1, groupStarts, capturedGroups, new HashSet<>())) return true;
+                if (dfs(next, text, index + 1, groupStarts, capturedGroups, new HashSet<>())) {
+                    return true;
+                }
             }
         }
 
         List<NfaState> anyCharStates = state.transitions.get('\uFFFF');
         if (anyCharStates != null) {
             for (NfaState next : anyCharStates) {
-                if (dfs(next, text, index + 1, groupStarts, capturedGroups, new HashSet<>())) return true;
+                if (dfs(next, text, index + 1, groupStarts, capturedGroups, new HashSet<>())) {
+                    return true;
+                }
             }
         }
         return false;

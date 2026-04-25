@@ -1,14 +1,12 @@
 package org.example;
 
+import org.example.automaton.dfa.*;
 import org.example.lexer.Lexer;
 import org.example.lexer.Token;
 import org.example.parser.Parser;
 import org.example.parser.ast.Node;
 import org.example.automaton.nfa.NfaBuilder;
 import org.example.automaton.nfa.NfaFragment;
-import org.example.automaton.dfa.DfaBuilder;
-import org.example.automaton.dfa.DfaMinimizer;
-import org.example.automaton.dfa.DfaState;
 import org.example.matcher.MatchResult;
 import org.example.matcher.DfaMatcher;
 import org.example.matcher.NfaMatcher;
@@ -70,5 +68,51 @@ public class Pattern {
             return new MatchResult(isMatch, null);
         }
     }
+
+
+    public String restoreRegex() {
+        if (hasGroups) {
+            throw new IllegalStateException("Cannot restore regex with named groups accurately from automaton.");
+        }
+        return org.example.automaton.dfa.KPathConverter.convertToRegex(minDfaStart);
+    }
+
+    public void invert() {
+        if (hasGroups) {
+            throw new UnsupportedOperationException("Операция инверсии не поддерживается для выражений с группами захвата.");
+        }
+
+        DfaInverter inverter = new DfaInverter();
+        this.minDfaStart = inverter.invert(this.minDfaStart);
+
+        DfaMinimizer minimizer = new DfaMinimizer();
+        this.minDfaStart = minimizer.minimize(this.minDfaStart);
+        minimizer.toDotImage(this.minDfaStart, "my_inverted_min_dfa_graph");
+    }
+
+
+    private Pattern(DfaState minDfaStart) {
+        this.nfa = null;
+        this.minDfaStart = minDfaStart;
+        this.hasGroups = false;
+    }
+
+
+    public static Pattern difference(Pattern p1, Pattern p2) {
+        if (p1.hasGroups || p2.hasGroups) {
+            throw new UnsupportedOperationException("Операция разности не поддерживается для выражений с группами захвата.");
+        }
+
+        DfaDifferenceBuilder diffBuilder = new DfaDifferenceBuilder();
+        DfaState diffStart = diffBuilder.buildDifference(p1.minDfaStart, p2.minDfaStart);
+
+        DfaMinimizer minimizer = new DfaMinimizer();
+        DfaState minDiffStart = minimizer.minimize(diffStart);
+        minimizer.toDotImage(minDiffStart, "my_difference_min_dfa_graph");
+
+        return new Pattern(minDiffStart);
+    }
+
+
 
 }

@@ -16,15 +16,14 @@ public class DfaBuilder {
         Set<NfaState> startClosure = epsilonClosure(Collections.singleton(nfa.start()));
         DfaState startDfaState = new DfaState(startClosure);
 
-        Map<Set<NfaState>, DfaState> dfaStatesMap = new HashMap<>();   // ключ множество nfa состояние, значение соответсвующее dfa состояние
+        Map<Set<NfaState>, DfaState> dfaStatesMap = new HashMap<>();
         dfaStatesMap.put(startClosure, startDfaState);
 
-        Queue<DfaState> unmarked = new LinkedList<>();
+        Queue<DfaState> unmarked = new ArrayDeque<>();
         unmarked.add(startDfaState);
 
         while (!unmarked.isEmpty()) {
             DfaState currentDfaState = unmarked.poll();
-
             Set<Character> alphabet = getAlphabet(currentDfaState.nfaStates);
 
             for (char c : alphabet) {
@@ -42,23 +41,22 @@ public class DfaBuilder {
                 }
             }
         }
-
         return startDfaState;
     }
 
     private Set<NfaState> epsilonClosure(Set<NfaState> states) {
-        Stack<NfaState> stack = new Stack<>();
+        Deque<NfaState> stack = new ArrayDeque<>(states);
         Set<NfaState> closure = new HashSet<>(states);
-        stack.addAll(states);
 
         while (!stack.isEmpty()) {
             NfaState current = stack.pop();
-            for (NfaState eps : current.epsilons) {
-                if (closure.add(eps)) {
-                    stack.push(eps);
+            for (NfaState epsilon : current.epsilons) {
+                if (closure.add(epsilon)) {
+                    stack.push(epsilon);
                 }
             }
         }
+
         return closure;
     }
 
@@ -131,7 +129,7 @@ public class DfaBuilder {
                 throw new IOException("Graphviz error: " + errorOutput);
             }
 
-            System.out.println("Граф сохранен в: " + pngPath.toAbsolutePath());
+           // System.out.println("Граф сохранен в: " + pngPath.toAbsolutePath());
 
         } catch (IOException | InterruptedException e) {
             System.err.println("Ошибка генерации. Проверьте Graphviz: dot -V");

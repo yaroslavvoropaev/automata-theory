@@ -74,8 +74,10 @@ public class Parser {
         return node;
     }
 
-    private Node parsePrimary() {
 
+
+
+    private Node parsePrimary() {
         if (match(TokenType.LPAREN)) {
             if (peek().type() == TokenType.NAMED_GROUP) {
                 String name = consume(TokenType.NAMED_GROUP).value();
@@ -180,7 +182,7 @@ public class Parser {
                 throw new IOException("Graphviz error: " + errorOutput);
             }
 
-            System.out.println("Граф сохранен в: " + pngPath.toAbsolutePath());
+           // System.out.println("Граф сохранен в: " + pngPath.toAbsolutePath());
 
         } catch (IOException | InterruptedException e) {
             System.err.println("Ошибка генерации. Проверьте Graphviz: dot -V");
