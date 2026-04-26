@@ -16,15 +16,15 @@ public class DfaBuilder {
         Set<NfaState> startClosure = epsilonClosure(Collections.singleton(nfa.start()));
         DfaState startDfaState = new DfaState(startClosure);
 
-        Map<Set<NfaState>, DfaState> dfaStatesMap = new HashMap<>();
+        Map<Set<NfaState>, DfaState> dfaStatesMap = new HashMap<>();  // множество нка -> соотв дка
         dfaStatesMap.put(startClosure, startDfaState);
 
-        Queue<DfaState> unmarked = new ArrayDeque<>();
-        unmarked.add(startDfaState);
+        Queue<DfaState> queue = new ArrayDeque<>();
+        queue.add(startDfaState);
 
-        while (!unmarked.isEmpty()) {
-            DfaState currentDfaState = unmarked.poll();
-            Set<Character> alphabet = getAlphabet(currentDfaState.nfaStates);
+        while (!queue.isEmpty()) {
+            DfaState currentDfaState = queue.poll();
+            Set<Character> alphabet = getAlphabet(currentDfaState.nfaStates);  // получаем алфавит
 
             for (char c : alphabet) {
                 Set<NfaState> moveSet = move(currentDfaState.nfaStates, c);
@@ -35,7 +35,7 @@ public class DfaBuilder {
                     if (nextDfaState == null) {
                         nextDfaState = new DfaState(closureSet);
                         dfaStatesMap.put(closureSet, nextDfaState);
-                        unmarked.add(nextDfaState);
+                        queue.add(nextDfaState);
                     }
                     currentDfaState.transitions.put(c, nextDfaState);
                 }

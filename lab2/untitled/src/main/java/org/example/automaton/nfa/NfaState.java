@@ -14,8 +14,7 @@ public class NfaState {
     public NfaState() {
         this.id = idCounter++;
     }
-    public void addTransition(char c, NfaState to)
-    {
+    public void addTransition(char c, NfaState to) {
         transitions.computeIfAbsent(c, k -> new ArrayList<>()).add(to);
     }
 

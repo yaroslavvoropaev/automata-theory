@@ -72,7 +72,6 @@ public class NfaBuilder {
 
 
     private NfaFragment buildRepeatEasy(Repeat repeat) {
-
         if (repeat.min() == 1 && repeat.max() == null) { //+
             NfaFragment sub = build(repeat.child());
             NfaState start = new NfaState();
@@ -161,7 +160,6 @@ public class NfaBuilder {
 
             start.groupInfo.put(nameGroup.name(), true);
             end.groupInfo.put(nameGroup.name(), false);
-
             return new NfaFragment(start, end);
         }
 

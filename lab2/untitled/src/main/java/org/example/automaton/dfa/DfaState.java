@@ -29,7 +29,10 @@ public class DfaState {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
         DfaState dfaState = (DfaState) o;
 
         if (this.nfaStates.isEmpty() && dfaState.nfaStates.isEmpty()) {
@@ -41,7 +44,7 @@ public class DfaState {
     @Override
     public int hashCode() {
         if (nfaStates.isEmpty()) {
-            return Objects.hash(id); // Используем id для синтезированных
+            return Objects.hash(id);
         }
         return Objects.hash(nfaStates);
     }

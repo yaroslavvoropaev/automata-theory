@@ -7,7 +7,7 @@ public class KPathConverter {
     public static String convertToRegex(DfaState startState) {
         List<DfaState> states = new ArrayList<>();
         Set<DfaState> visited = new HashSet<>();
-        Queue<DfaState> queue = new LinkedList<>();
+        Queue<DfaState> queue = new ArrayDeque<>();
 
         queue.add(startState);
         visited.add(startState);
@@ -80,12 +80,9 @@ public class KPathConverter {
         return finalRegex == null ? "" : finalRegex;
     }
 
-    // --- Вспомогательные методы склейки с оптимизацией скобок ---
-
     private static String escape(char c) {
-        if (c == '\uFFFF') return "."; // Возвращаем оператор "любой символ"
+        if (c == '\uFFFF') return ".";
 
-        // Экранирование метасимволов вашей грамматики
         String metas = "|+?.-{}<>()&";
         if (metas.indexOf(c) != -1) {
             return "&" + c;
@@ -99,7 +96,7 @@ public class KPathConverter {
         if (a.equals(b)) return a;
         if (a.isEmpty() && !b.isEmpty()) return "(" + b + ")?";
         if (b.isEmpty() && !a.isEmpty()) return "(" + a + ")?";
-        if (a.isEmpty()) return ""; // оба эпсилон
+        if (a.isEmpty()) return "";
         return "(" + a + "|" + b + ")";
     }
 

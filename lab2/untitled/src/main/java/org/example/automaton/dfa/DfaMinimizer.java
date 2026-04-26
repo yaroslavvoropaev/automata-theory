@@ -40,33 +40,34 @@ public class DfaMinimizer {
             }
         }
 
-
-
         List<Set<DfaState>> partitions = new ArrayList<>();  // группы состояний
-        if (!finalStates.isEmpty()) partitions.add(finalStates);
-        if (!nonFinalStates.isEmpty()) partitions.add(nonFinalStates);
-
+        if (!finalStates.isEmpty())  {
+            partitions.add(finalStates);
+        }
+        if (!nonFinalStates.isEmpty()) {
+            partitions.add(nonFinalStates);
+        }
 
         boolean changed = true;
         while (changed) {
             changed = false;
-            List<Set<DfaState>> newPartitions = new ArrayList<>();
-            Map<DfaState, Integer> stateToPartitionIndex = new HashMap<>();     // состояние -> номер группы
+            List<Set<DfaState>> newPartitions = new ArrayList<>();         // новое разбиение на группы
+            Map<DfaState, Integer> stateToGroupIndex = new HashMap<>();     // состояние -> номер группы
 
             for (int i = 0; i < partitions.size(); i++) {
                 for (DfaState state : partitions.get(i)) {
-                    stateToPartitionIndex.put(state, i);
+                    stateToGroupIndex.put(state, i);
                 }
             }
 
             for (Set<DfaState> group : partitions) {
-                Map<Map<Character, Integer>, Set<DfaState>> splits = new HashMap<>();       // мапа для разделения груп на подгруппы
+                Map<Map<Character, Integer>, Set<DfaState>> splits = new HashMap<>();       // мапа для разделения груп на подгруппы  (Map<Character, Integer> - сигнатура)
 
                 for (DfaState state : group) {
-                    Map<Character, Integer> signature = new HashMap<>();               //для каждого символаа — индекс группы назначения
+                    Map<Character, Integer> signature = new HashMap<>();               // для каждого символаа — индекс группы назначения
                     for (char c : alphabet) {
                         DfaState target = state.transitions.get(c);
-                        signature.put(c, target == null ? -1 : stateToPartitionIndex.get(target));
+                        signature.put(c, target == null ? -1 : stateToGroupIndex.get(target));
                     }
                     splits.computeIfAbsent(signature, k -> new HashSet<>()).add(state);
                 }
@@ -79,7 +80,7 @@ public class DfaMinimizer {
             partitions = newPartitions;
         }
 
-        Map<Set<DfaState>, DfaState> groupToNewState = new HashMap<>();      // отображает множесвтво старых групп в новон состояние
+        Map<Set<DfaState>, DfaState> groupToNewState = new HashMap<>();      // отображает множесвтво старых состояний в новон состояние
         DfaState newStart = null;
 
         for (Set<DfaState> group : partitions) {
@@ -88,7 +89,9 @@ public class DfaMinimizer {
 
             for (DfaState state : group) {
                 mergedNfaStates.addAll(state.nfaStates);
-                if (state.isFinal) isGroupFinal = true;
+                if (state.isFinal) {
+                    isGroupFinal = true;
+                }
             }
 
             DfaState newState = mergedNfaStates.isEmpty()
@@ -110,7 +113,7 @@ public class DfaMinimizer {
 
         for (Set<DfaState> group : partitions) {
             DfaState newState = groupToNewState.get(group);
-            DfaState representative = group.iterator().next();
+            DfaState representative = group.iterator().next();     // любое состояние из группы
 
             for (Map.Entry<Character, DfaState> transition : representative.transitions.entrySet()) {
                 char c = transition.getKey();
