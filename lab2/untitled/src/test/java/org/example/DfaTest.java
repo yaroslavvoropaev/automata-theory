@@ -52,6 +52,7 @@ class DfaTest {
         assertTrue(pattern.matches("any"));
         assertTrue(pattern.matches("?"));
         assertTrue(pattern.matches("+++"));
+        assertFalse(pattern.matches("?any"));
     }
 
     @Test

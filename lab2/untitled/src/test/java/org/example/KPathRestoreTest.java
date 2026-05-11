@@ -1,5 +1,6 @@
 package org.example;
 
+import org.example.automaton.dfa.DfaState;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -15,8 +16,13 @@ public class KPathRestoreTest {
         Pattern pattern = Pattern.compile("abc");
         String restored = pattern.restoreRegex();
 
-        assertTrue(Pattern.compile(restored).matches("abc"));
-        assertFalse(Pattern.compile(restored).matches("abd"));
+        Pattern restoredPattern = Pattern.compile(restored);
+        assertTrue(restoredPattern.matches("abc"));
+        assertFalse(restoredPattern.matches("abd"));
+
+        assertTrue(DfaState.isIsomorhic(pattern.minDfaStart, restoredPattern.minDfaStart));
+
+
     }
 
     @Test
@@ -41,6 +47,9 @@ public class KPathRestoreTest {
         Pattern restoredPattern = Pattern.compile(restored);
         assertTrue(restoredPattern.matches("a"));
         assertTrue(restoredPattern.matches("aaaaa"));
+
+        assertTrue(DfaState.isIsomorhic(pattern.minDfaStart, restoredPattern.minDfaStart));
+
     }
 
     @Test
@@ -52,6 +61,9 @@ public class KPathRestoreTest {
         Pattern restoredPattern = Pattern.compile(restored);
         assertTrue(restoredPattern.matches(""));
         assertTrue(restoredPattern.matches("a"));
+
+        assertTrue(DfaState.isIsomorhic(pattern.minDfaStart, restoredPattern.minDfaStart));
+
     }
 
     @Test
@@ -64,6 +76,9 @@ public class KPathRestoreTest {
         assertTrue(restoredPattern.matches("abc"));
         assertTrue(restoredPattern.matches("abababc"));
         assertFalse(restoredPattern.matches("ac"));
+
+        assertTrue(DfaState.isIsomorhic(pattern.minDfaStart, restoredPattern.minDfaStart));
+
     }
 
     @Test
@@ -76,6 +91,9 @@ public class KPathRestoreTest {
         assertTrue(restoredPattern.matches("f"));
         assertTrue(restoredPattern.matches("7"));
         assertTrue(restoredPattern.matches("&"));
+
+        assertTrue(DfaState.isIsomorhic(pattern.minDfaStart, restoredPattern.minDfaStart));
+
     }
 
     @Test
@@ -86,20 +104,9 @@ public class KPathRestoreTest {
 
         assertTrue(restored.contains("&+"));
         assertTrue(Pattern.compile(restored).matches("+"));
+
     }
 
-    @Test
-    @DisplayName("Разность языков и восстановление")
-    void testDifferenceAndRestore() {
-        Pattern p1 = Pattern.compile("a|b");
-        Pattern p2 = Pattern.compile("a");
-        Pattern diff = Pattern.difference(p1, p2);
-        String restored = diff.restoreRegex();
-
-        Pattern restoredPattern = Pattern.compile(restored);
-        assertTrue(restoredPattern.matches("b"));
-        assertFalse(restoredPattern.matches("a"));
-    }
 
     @Test
     @DisplayName("Фиксированный повтор: a{3}")
@@ -111,6 +118,8 @@ public class KPathRestoreTest {
         assertTrue(restoredPattern.matches("aaa"));
         assertFalse(restoredPattern.matches("aa"));
         assertFalse(restoredPattern.matches("aaaa"));
+
+        assertTrue(DfaState.isIsomorhic(pattern.minDfaStart, restoredPattern.minDfaStart));
     }
 
     @Test
@@ -125,6 +134,8 @@ public class KPathRestoreTest {
         assertTrue(restoredPattern.matches("aaa"));
         assertTrue(restoredPattern.matches("aaaa"));
         assertFalse(restoredPattern.matches("aaaaa"));
+
+        assertTrue(DfaState.isIsomorhic(pattern.minDfaStart, restoredPattern.minDfaStart));
     }
 
     @Test
@@ -137,6 +148,8 @@ public class KPathRestoreTest {
         assertFalse(restoredPattern.matches("a"));
         assertTrue(restoredPattern.matches("aa"));
         assertTrue(restoredPattern.matches("aaaaa"));
+
+        assertTrue(DfaState.isIsomorhic(pattern.minDfaStart, restoredPattern.minDfaStart));
     }
 
     @Test
@@ -146,9 +159,12 @@ public class KPathRestoreTest {
         String restored = pattern.restoreRegex();
 
         Pattern restoredPattern = Pattern.compile(restored);
+
         assertTrue(restoredPattern.matches(""));
         assertTrue(restoredPattern.matches("a"));
         assertTrue(restoredPattern.matches("aa"));
         assertFalse(restoredPattern.matches("aaa"));
+
+        assertTrue(DfaState.isIsomorhic(pattern.minDfaStart, restoredPattern.minDfaStart));
     }
 }

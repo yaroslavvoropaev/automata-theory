@@ -5,6 +5,7 @@ import org.example.automaton.nfa.NfaState;
 import java.util.*;
 
 public class DfaState {
+
     private static int idCounter = 0;
     public final int id;
 
@@ -48,5 +49,56 @@ public class DfaState {
         }
         return Objects.hash(nfaStates);
     }
+
+
+    private record StatePair(DfaState first, DfaState second) {}
+
+    public static boolean isIsomorhic(DfaState first, DfaState second) {
+        Map<DfaState, DfaState> map = new HashMap<>();
+        Queue<StatePair> queue = new ArrayDeque<>();
+
+        if (first.isFinal != second.isFinal) {
+            return false;
+        }
+
+        map.put(first, second);
+        queue.add(new StatePair(first, second));
+
+        while (!queue.isEmpty()) {
+            StatePair pair = queue.poll();
+            DfaState state1 = pair.first();
+            DfaState state2 = pair.second();
+
+            Set<Character> symbols = new HashSet<>();
+            symbols.addAll(state1.transitions.keySet());
+            symbols.addAll(state2.transitions.keySet());
+
+            for (char c : symbols) {
+                DfaState next1 = state1.transitions.get(c);
+                DfaState next2 = state2.transitions.get(c);
+
+                if ((next1 == null) != (next2 == null)) {
+                    return false;
+                }
+                if (next1 == null) {
+                    continue;
+                }
+
+                if (map.containsKey(next1)) {
+                    if (map.get(next1) != next2) {
+                        return false;
+                    }
+                } else {
+                    if (next1.isFinal != next2.isFinal) {
+                        return false;
+                    }
+                    map.put(next1, next2);
+                    queue.add(new StatePair(next1, next2));
+                }
+            }
+        }
+        return true;
+    }
+
 
 }

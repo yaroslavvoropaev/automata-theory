@@ -1,5 +1,6 @@
 package org.example;
 
+import org.example.automaton.dfa.DfaState;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -12,15 +13,15 @@ public class InversionTest {
     @DisplayName("Проверка базовой инверсии простзы строк")
     void testSimpleStringInversion() {
         Pattern pattern = Pattern.compile("abc");
+        DfaState first = pattern.minDfaStart;
         pattern.invert();
 
         assertTrue(pattern.matches("cba"));
         assertFalse(pattern.matches("abc"));
-
-        pattern = Pattern.compile("a");
         pattern.invert();
+        DfaState second = pattern.minDfaStart;
 
-        assertTrue(pattern.matches("a"));
+        assertTrue(DfaState.isIsomorhic(first, second));
     }
 
     @Test
@@ -29,12 +30,17 @@ public class InversionTest {
         Pattern pattern = Pattern.compile("ab+");
         pattern.invert();
 
+        DfaState first = pattern.minDfaStart;
+
         assertTrue(pattern.matches("ba"));
         assertTrue(pattern.matches("bba"));
         assertTrue(pattern.matches("bbba"));
 
         assertFalse(pattern.matches("ab"));
         assertFalse(pattern.matches("abb"));
+
+        DfaState second = pattern.minDfaStart;
+        assertTrue(DfaState.isIsomorhic(first, second));
     }
 
 
@@ -45,11 +51,16 @@ public class InversionTest {
         Pattern pattern = Pattern.compile("(ac){1,2}b");
         pattern.invert();
 
+        DfaState first = pattern.minDfaStart;
+
         assertTrue(pattern.matches("bca"));
         assertTrue(pattern.matches("bcaca"));
         assertFalse(pattern.matches("acb"));
         assertFalse(pattern.matches("acacb"));
         assertFalse(pattern.matches("bacacac"));
+
+        DfaState second = pattern.minDfaStart;
+        assertTrue(DfaState.isIsomorhic(first, second));
     }
 
     @Test
@@ -58,10 +69,14 @@ public class InversionTest {
         Pattern pattern = Pattern.compile("aba|racecar");
         pattern.invert();
 
+        DfaState first = pattern.minDfaStart;
+
         assertTrue(pattern.matches("aba"));
         assertTrue(pattern.matches("racecar"));
-    }
 
+        DfaState second = pattern.minDfaStart;
+        assertTrue(DfaState.isIsomorhic(first, second));
+    }
 
     @Test
     @DisplayName("Сложный тест: инверсия с любым символом (.)")
@@ -69,9 +84,14 @@ public class InversionTest {
         Pattern pattern = Pattern.compile("ac.b");
         pattern.invert();
 
+        DfaState first = pattern.minDfaStart;
+
         assertTrue(pattern.matches("bxca"));
         assertTrue(pattern.matches("b1ca"));
         assertTrue(pattern.matches("bbca"));
         assertFalse(pattern.matches("axb"));
+
+        DfaState second = pattern.minDfaStart;
+        assertTrue(DfaState.isIsomorhic(first, second));
     }
 }

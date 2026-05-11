@@ -16,7 +16,7 @@ import java.util.List;
 
 public class Pattern {
     private final NfaFragment nfa;
-    private DfaState minDfaStart;
+    public DfaState minDfaStart;
     private final boolean hasGroups;
 
     private Pattern(String regex) {
@@ -79,7 +79,7 @@ public class Pattern {
 
     public void invert() {
         if (hasGroups) {
-            throw new UnsupportedOperationException("Операция инверсии не поддерживается для выражений с группами захвата.");
+            throw new UnsupportedOperationException("The inversion operation is not supported for expressions with capture groups.");
         }
 
         DfaInverter inverter = new DfaInverter();
@@ -97,10 +97,9 @@ public class Pattern {
         this.hasGroups = false;
     }
 
-
     public static Pattern difference(Pattern p1, Pattern p2) {
         if (p1.hasGroups || p2.hasGroups) {
-            throw new UnsupportedOperationException("Операция разности не поддерживается для выражений с группами захвата.");
+            throw new UnsupportedOperationException("The difference operation is not supported for expressions with capture groups");
         }
 
         DfaDifferenceBuilder diffBuilder = new DfaDifferenceBuilder();

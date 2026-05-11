@@ -54,7 +54,7 @@ public class DfaMinimizer {
             List<Set<DfaState>> newPartitions = new ArrayList<>();         // новое разбиение на группы
             Map<DfaState, Integer> stateToGroupIndex = new HashMap<>();     // состояние -> номер группы
 
-            for (int i = 0; i < partitions.size(); i++) {
+            for (int i = 0; i < partitions.size(); i++) {                 // заполнение мапы состояние -> номер группы
                 for (DfaState state : partitions.get(i)) {
                     stateToGroupIndex.put(state, i);
                 }
@@ -80,13 +80,12 @@ public class DfaMinimizer {
             partitions = newPartitions;
         }
 
-        Map<Set<DfaState>, DfaState> groupToNewState = new HashMap<>();      // отображает множесвтво старых состояний в новон состояние
+        Map<Set<DfaState>, DfaState> mapOldToNewState = new HashMap<>();      // отображает множесвтво старых состояний в новон состояние
         DfaState newStart = null;
 
         for (Set<DfaState> group : partitions) {
             Set<NfaState> mergedNfaStates = new HashSet<>();
             boolean isGroupFinal = false;
-
             for (DfaState state : group) {
                 mergedNfaStates.addAll(state.nfaStates);
                 if (state.isFinal) {
@@ -94,25 +93,26 @@ public class DfaMinimizer {
                 }
             }
 
-            DfaState newState = mergedNfaStates.isEmpty()
+
+            DfaState newState = mergedNfaStates.isEmpty()        // нужно для difference
                     ? new DfaState(isGroupFinal)
                     : new DfaState(mergedNfaStates);
 
-            groupToNewState.put(group, newState);
+            mapOldToNewState.put(group, newState);
             if (group.contains(startState)) {
                 newStart = newState;
             }
         }
 
-        Map<DfaState, Set<DfaState>> stateToGroup = new HashMap<>();
+        Map<DfaState, Set<DfaState>> stateToGroup = new HashMap<>();    // из старого в новый
         for (Set<DfaState> group : partitions) {
             for (DfaState s : group) {
                 stateToGroup.put(s, group);
             }
         }
 
-        for (Set<DfaState> group : partitions) {
-            DfaState newState = groupToNewState.get(group);
+        for (Set<DfaState> group : partitions) {                     // перенос переходов
+            DfaState newState = mapOldToNewState.get(group);
             DfaState representative = group.iterator().next();     // любое состояние из группы
 
             for (Map.Entry<Character, DfaState> transition : representative.transitions.entrySet()) {
@@ -120,7 +120,7 @@ public class DfaMinimizer {
                 DfaState target = transition.getValue();
                 Set<DfaState> targetGroup = stateToGroup.get(target);
                 if (targetGroup != null) {
-                    newState.transitions.put(c, groupToNewState.get(targetGroup));
+                    newState.transitions.put(c, mapOldToNewState.get(targetGroup));
                 }
             }
         }

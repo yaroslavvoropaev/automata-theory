@@ -1,5 +1,6 @@
 package org.example;
 
+import org.example.automaton.dfa.DfaState;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -7,19 +8,18 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class DifferenceTest {
+
     @Test
-    @DisplayName("Базовое вычитание: удаление конкретных слов")
-    void testSimpleDifference() {
-        Pattern p1 = Pattern.compile("(a|b){2}");
+    @DisplayName("Пустая разность")
+    void testEmptyDifference() {
+        Pattern p1 = Pattern.compile("abc");
         Pattern p2 = Pattern.compile("ab");
 
         Pattern diff = Pattern.difference(p1, p2);
 
-        assertTrue(diff.matches("aa"));
-        assertTrue(diff.matches("ba"));
-        assertTrue(diff.matches("bb"));
-
-        assertFalse(diff.matches("ab"));
+        String restored = diff.restoreRegex();
+        Pattern restoredPattern = Pattern.compile(restored);
+        assertTrue(DfaState.isIsomorhic(diff.minDfaStart, restoredPattern.minDfaStart));
     }
 
     @Test
@@ -36,7 +36,25 @@ public class DifferenceTest {
 
         assertFalse(diff.matches("aa"));
         assertFalse(diff.matches(""));
+
+        String restored = diff.restoreRegex();
+        Pattern restoredPattern = Pattern.compile(restored);
+        assertTrue(DfaState.isIsomorhic(diff.minDfaStart, restoredPattern.minDfaStart));
     }
+
+
+    @Test
+    @DisplayName("Базовое вычитание: удаление конкретных слов")
+    void testSimpleDifference() {
+        Pattern p1 = Pattern.compile("(a|b){2}");
+        Pattern p2 = Pattern.compile("ab");
+
+        Pattern diff = Pattern.difference(p1, p2);
+
+        assertTrue(diff.matches("aa"));
+        assertTrue(diff.matches("bb"));
+    }
+
 
     @Test
     @DisplayName("Разность с использованием оператора 'любой символ' (.)")
@@ -51,6 +69,8 @@ public class DifferenceTest {
 
         assertFalse(diff.matches("z12"));
         assertFalse(diff.matches("zap"));
+
+
     }
 
     @Test
@@ -63,6 +83,10 @@ public class DifferenceTest {
 
         assertTrue(diff.matches("cat"));
         assertFalse(diff.matches("dog"));
+
+        String restored = diff.restoreRegex();
+        Pattern restoredPattern = Pattern.compile(restored);
+        assertTrue(DfaState.isIsomorhic(diff.minDfaStart, restoredPattern.minDfaStart));
     }
 
     @Test
@@ -104,13 +128,28 @@ public class DifferenceTest {
     }
 
     @Test
+    @DisplayName("Разность с 'любым символом' и опциональностью")
+    void testDifferenceDot() {
+        Pattern p1 = Pattern.compile("..");
+        Pattern p2 = Pattern.compile(".b");
+        Pattern diff = Pattern.difference(p1, p2);
+
+        assertTrue(diff.matches("ac"));
+        assertTrue(diff.matches("aa"));
+        assertFalse(diff.matches("ab"));
+        assertFalse(diff.matches("bb"));
+    }
+
+    @Test
     @DisplayName("Разность с использованием квантификатора '?'")
     void testDifferenceWithOptional() {
-        Pattern p1 = Pattern.compile("a?");
-        Pattern p2 = Pattern.compile("a");
+        Pattern p1 = Pattern.compile(".");
+        Pattern p2 = Pattern.compile("b|c");
         Pattern diff1 = Pattern.difference(p1, p2);
 
-        assertTrue(diff1.matches(""));
-        assertFalse(diff1.matches("a"));
+        assertTrue(diff1.matches("a"));
+        assertTrue(diff1.matches("d"));
+        assertFalse(diff1.matches("b"));
+        assertFalse(diff1.matches("c"));
     }
 }

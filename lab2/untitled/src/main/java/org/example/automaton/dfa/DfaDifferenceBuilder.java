@@ -4,7 +4,7 @@ import java.util.*;
 
 public class DfaDifferenceBuilder {
 
-   private record StatePair(DfaState stateA, DfaState stateB) {}
+    private record StatePair(DfaState stateA, DfaState stateB) {}
 
     public DfaState buildDifference(DfaState startA, DfaState startB) {
         Map<StatePair, DfaState> stateMap = new HashMap<>();

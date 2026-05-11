@@ -44,8 +44,8 @@ public class DfaBuilder {
         return startDfaState;
     }
 
-    private Set<NfaState> epsilonClosure(Set<NfaState> states) {
-        Deque<NfaState> stack = new ArrayDeque<>(states);
+    private Set<NfaState> epsilonClosure(Set<NfaState> states) {              // все сост, в которые можно попасть
+        Deque<NfaState> stack = new ArrayDeque<>(states);                       // из множества сост под эпсилолн переходам
         Set<NfaState> closure = new HashSet<>(states);
 
         while (!stack.isEmpty()) {
@@ -56,7 +56,6 @@ public class DfaBuilder {
                 }
             }
         }
-
         return closure;
     }
 

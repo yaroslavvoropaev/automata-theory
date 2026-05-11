@@ -6,11 +6,10 @@ import org.example.automaton.nfa.NfaState;
 import java.util.*;
 
 public class DfaInverter {
-
     public DfaState invert(DfaState startState) {
         Set<DfaState> dfaStates = getAllStates(startState);
 
-        Map<DfaState, NfaState> dfaToNfaMap = new HashMap<>();
+        Map<DfaState, NfaState> dfaToNfaMap = new HashMap<>();   // на каждое дка сост по одному нка сост
         for (DfaState state : dfaStates) {
             dfaToNfaMap.put(state, new NfaState());
         }
@@ -18,7 +17,7 @@ public class DfaInverter {
         NfaState newNfaStart = new NfaState();
         NfaState newNfaEnd = dfaToNfaMap.get(startState);
 
-        for (DfaState state : dfaStates) {
+        for (DfaState state : dfaStates) {                     // инвертирование переходов и перено финальности
             NfaState currentNfa = dfaToNfaMap.get(state);
 
             if (state.isFinal) {
@@ -48,8 +47,8 @@ public class DfaInverter {
         queue.add(start);
         visited.add(start);
         while (!queue.isEmpty()) {
-            DfaState curr = queue.poll();
-            for (DfaState target : curr.transitions.values()) {
+            DfaState current = queue.poll();
+            for (DfaState target : current.transitions.values()) {
                 if (visited.add(target)) {
                     queue.add(target);
                 }

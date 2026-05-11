@@ -22,7 +22,7 @@ public class NfaMatcher {
         return new MatchResult();
     }
 
-    private boolean dfs(NfaState state, String text, int index,
+    private boolean dfs(NfaState state, String text, int index,                          // text - входная строка
                         Map<String, Integer> groupStarts,
                         Map<String, String> capturedGroups,
                         Set<NfaState> visitedEpsilons) {
@@ -67,7 +67,6 @@ public class NfaMatcher {
         }
 
         char c = text.charAt(index);
-
         List<NfaState> nextStates = state.transitions.get(c);
         if (nextStates != null) {
             for (NfaState next : nextStates) {
